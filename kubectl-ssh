@@ -61,8 +61,7 @@ EOF
   }
   trap delete_pod EXIT
 
-  echo "Created $pod"
-  echo "Waiting for container to start..."
+  echo "Pod $pod created. Waiting for container to start..." >&2
   kubectl wait -n "$ns" --for=condition=Ready --timeout 60s "$pod" "$@" >/dev/null
 
   # TODO: rethink invocation
