@@ -118,28 +118,33 @@ print_usage() {
   exit 0
 }
 
-if [ "$1" == "--help" ]; then
-  print_usage
-fi
+# for debugging with no k8s
+[ -n "$KUBECTL_SSH_DEBUG" ] && {
+	ssh_node() { printf 'node: %s\n' $# "$@" ; }
+	ssh_pod() { printf 'pod: %s\n' $# "$@" ; }
+	set -x
+}
 
-if [[ "$1" == node/* ]]; then
-  nodeName=${1:5}
-  shift
-  ssh_node "$nodeName" "$@"
-elif [ "$1" == "node" ]; then
-  shift
-  case "$1" in
-  -*) nodeName="";;
-  "") ;;
-  *) nodeName="$1"; shift ;;
-  esac
+# Transform the arguments:
+# KIND/NAME ... -> KIND NAME ...
+case "$1" in
+*/* )
+	kind="${1%%/*}"
+	name="${1#*/}"
+	shift
+	set -- "$kind" "$name" "$@"
+	;;
+esac
 
-  ssh_node "$nodeName" "$@"
-elif [[ "$1" == pod/* ]]; then
-  ssh_pod "$@"
-elif [ "$1" == "pod" ]; then
-  shift
-  ssh_pod "$@"
-else
-  print_usage
-fi
+# Make it executable as:
+# ssh_KIND NAME ...
+case "$1" in
+node | pod )
+	ssh_kind="ssh_$1"
+	shift
+	$ssh_kind "$@"
+	;;
+* )
+	print_usage
+	;;
+esac
