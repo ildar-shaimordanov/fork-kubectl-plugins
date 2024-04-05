@@ -5,6 +5,7 @@ set -e
 ssh_node() {
   node="$1"
   shift
+
   if [ "$node" = "" ]; then
     node="$( kubectl get node -o jsonpath='{.items[*].metadata.name}' )"
 
@@ -60,10 +61,10 @@ spec:
 EOF
   )"
 
-  deletePod() {
-    kubectl delete -n "$ns" "$pod" "$@" --wait=false
+  delete_pod() {
+    kubectl delete -n "$ns" "$pod" --wait=false
   }
-  trap deletePod EXIT
+  trap delete_pod EXIT
 
   echo "Created $pod"
   echo "Waiting for container to start..."
