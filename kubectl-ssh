@@ -19,11 +19,6 @@ ssh_node() {
     echo "Single-node cluster detected. Defaulting to node $node" >&2
   fi
 
-  if [ $# -eq 1 ]; then
-    command="$1"
-    shift
-  fi
-
   ns=default
   pod="$(
     kubectl create -n "$ns" -o name "$@" -f - <<EOF
@@ -69,6 +64,16 @@ EOF
   echo "Created $pod"
   echo "Waiting for container to start..."
   kubectl wait -n "$ns" --for=condition=Ready --timeout 60s "$pod" "$@" >/dev/null
+
+  # TODO: rethink invocation
+  # the following two example bring to different command
+  # kubectl ssh node ls /
+  # kubectl ssh node 'ls /'
+
+  if [ $# -eq 1 ]; then
+    command="$1"
+    shift
+  fi
 
   if [ -z "$command" ]; then
     kubectl attach -n "$ns" -it "$pod" -c ssh-node "$@"
