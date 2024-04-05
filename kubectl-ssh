@@ -64,7 +64,7 @@ EOF
   echo "Pod $pod created. Waiting for container to start..." >&2
   kubectl wait -n "$ns" --for=condition=Ready --timeout 60s "$pod" "$@" >/dev/null
 
-  # TODO: rethink invocation
+  # TODO: rethink invocation (as mentioned in the issues/10)
   # the following two example bring to different command
   # kubectl ssh node ls /
   # kubectl ssh node 'ls /'
