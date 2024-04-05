@@ -6,15 +6,16 @@ ssh_node() {
   node="$1"
   shift
   if [ "$node" = "" ]; then
-    node="$(kubectl get node -o name "$@" | sed 's/node\///' | tr '\n' ' ')"
-    node="${node::-1}"
+    node="$( kubectl get node -o jsonpath='{.items[*].metadata.name}' )"
 
-    if [[ "$node" =~ " " ]]; then
-      echo "Node name must be specified. Choose one of: [$node]"
+    case "$node" in
+    *' '* )
+      echo "Node name must be specified. Choose one of: [$node]" >&2
       exit 1
-    else
-      echo "Single-node cluster detected. Defaulting to node $node"
-    fi
+      ;;
+    esac
+
+    echo "Single-node cluster detected. Defaulting to node $node" >&2
   fi
 
   if [ $# -eq 1 ]; then
